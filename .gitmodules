@@ -1,9 +1,6 @@
 [submodule "contrib/glm"]
 	path = contrib/glm
 	url = https://github.com/g-truc/glm
-[submodule "stb"]
-	path = stb
-	url = https://github.com/nothings/stb.git
 [submodule "contrib/stb"]
 	path = contrib/stb
 	url = https://github.com/nothings/stb.git
