@@ -18,6 +18,8 @@ class Window
     void LoadImage();
     void UpdateImage();
 
+    void UpdateBlur(int blur);
+
     GLuint m_glTexture;
     SDL_GLContext m_context;
     SDL_Window *m_window = nullptr;

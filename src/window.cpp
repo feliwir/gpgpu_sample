@@ -136,6 +136,7 @@ void gpgpu::Window::Run()
     static int current_backend = 0;
 
     // Image settings
+    int blur = 1;
     float brightness = 0.0f;
 
     // Main loop
@@ -175,9 +176,11 @@ void gpgpu::Window::Run()
 
             ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
                 if(ImGui::Button("Load image"))
-                {
                     LoadImage();
-                }
+                
+                if(ImGui::SliderInt("Blur", &blur, 1,10))
+                    UpdateBlur(blur);
+
                 ImGui::SliderFloat("Brightness", &brightness, -1.0f, 1.0f);
             ImGui::End();
 
@@ -186,7 +189,7 @@ void gpgpu::Window::Run()
                 ImGui::Combo("Backend API", &current_backend, backends, IM_ARRAYSIZE(backends));
             ImGui::End();
 
-            ImGui::Begin("Image");
+            ImGui::Begin("Image",nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                 int maxWidth = io.DisplaySize.x * 0.6f;
                 int maxHeight = io.DisplaySize.y * 0.6f;
 
