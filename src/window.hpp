@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <memory>
 #include <vector>
+#include "Image.hpp"
 
 namespace gpgpu
 {
@@ -27,8 +28,6 @@ class Window
     int m_height = 600;
 
     GLuint m_imageHandle = 0;
-    int m_imageWidth = 0;
-    int m_imageHeight = 0;
-    std::vector<float> m_imageData;
+    Image m_input;
 };
 } // namespace volsycl

@@ -14,7 +14,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
 add_executable(gpgpu_sample ${SRC_FILES})
-target_link_libraries(gpgpu_sample SDL2 SDL2main OpenGL::GL GLEW::glew)
+target_link_libraries(gpgpu_sample SDL2 SDL2main OpenGL::GL GLEW::glew stdc++fs)
 
 find_package(ComputeCpp REQUIRED)
 

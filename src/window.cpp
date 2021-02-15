@@ -7,8 +7,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 constexpr int NUM_IMG_CHANNELS = 3;
 
@@ -88,33 +86,22 @@ void gpgpu::Window::LoadImage()
 
     auto file = tinyfd_openFileDialog("Select an image", "", patterns.size(), patterns.data(), "Image files", 0);
 
-    if(file)
+    if (file)
     {
-        auto data = stbi_loadf(file,&m_imageWidth, &m_imageHeight, nullptr, NUM_IMG_CHANNELS);
-
-        // Convert image data to floats
-        m_imageData.clear();
-        m_imageData.resize(m_imageHeight* m_imageWidth * NUM_IMG_CHANNELS);
-
-        for(int i=0;i<m_imageWidth * m_imageHeight;i++)
+        if (m_image.Load(file))
         {
-            m_imageData[NUM_IMG_CHANNELS* i + 0] = data[NUM_IMG_CHANNELS* i + 0];
-            m_imageData[NUM_IMG_CHANNELS* i + 1] = data[NUM_IMG_CHANNELS* i + 1];
-            m_imageData[NUM_IMG_CHANNELS* i + 2] = data[NUM_IMG_CHANNELS* i + 2];
+            UpdateImage();
         }
-
-        stbi_image_free(data);
-        if(m_imageHandle == 0)
-        {
-            glGenTextures(1, &m_imageHandle);
-        }
-
-        UpdateImage();
     }
 }
 
 void gpgpu::Window::UpdateImage()
 {
+    if (m_imageHandle == 0)
+    {
+        glGenTextures(1, &m_imageHandle);
+    }
+
     glBindTexture(GL_TEXTURE_2D, m_imageHandle);
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -122,7 +109,11 @@ void gpgpu::Window::UpdateImage()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_imageWidth, m_imageHeight, 0, GL_RGB, GL_FLOAT, m_imageData.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_image.GetSize().x, m_image.GetSize().y, 0, GL_RGB, GL_FLOAT, m_image.GetData().data());
+}
+
+void gpgpu::Window::UpdateBlur(int blur)
+{
 }
 
 void gpgpu::Window::Run()
@@ -132,7 +123,7 @@ void gpgpu::Window::Run()
     ImGuiIO &io = ImGui::GetIO();
 
     // Backend settings
-    const char* backends[] = { "CPU", "Multicore CPU", "SYCL" };
+    const char *backends[] = {"CPU", "Multicore CPU", "SYCL"};
     static int current_backend = 0;
 
     // Image settings
@@ -158,7 +149,7 @@ void gpgpu::Window::Run()
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
-            
+
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
                 event.window.windowID == SDL_GetWindowID(m_window))
                 done = true;
@@ -175,42 +166,42 @@ void gpgpu::Window::Run()
             static int counter = 0;
 
             ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
-                if(ImGui::Button("Load image"))
-                    LoadImage();
-                
-                if(ImGui::SliderInt("Blur", &blur, 1,10))
-                    UpdateBlur(blur);
+            if (ImGui::Button("Load image"))
+                LoadImage();
 
-                ImGui::SliderFloat("Brightness", &brightness, -1.0f, 1.0f);
+            if (ImGui::SliderInt("Blur", &blur, 1, 10))
+                UpdateBlur(blur);
+
+            ImGui::SliderFloat("Brightness", &brightness, -1.0f, 1.0f);
             ImGui::End();
 
             ImGui::Begin("Backend settings"); // Create a window called "Hello, world!" and append into it.
 
-                ImGui::Combo("Backend API", &current_backend, backends, IM_ARRAYSIZE(backends));
+            ImGui::Combo("Backend API", &current_backend, backends, IM_ARRAYSIZE(backends));
             ImGui::End();
 
-            ImGui::Begin("Image",nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-                int maxWidth = io.DisplaySize.x * 0.6f;
-                int maxHeight = io.DisplaySize.y * 0.6f;
+            ImGui::Begin("Image", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            int maxWidth = io.DisplaySize.x * 0.6f;
+            int maxHeight = io.DisplaySize.y * 0.6f;
 
-                int displayWidth = m_imageWidth;
-                int displayHeight = m_imageHeight;
-                
-                if(displayWidth > maxWidth)
-                {
-                    float ratio = displayWidth / maxWidth;
-                    displayWidth /= ratio;
-                    displayHeight /= ratio;
-                }
+            int displayWidth = m_image.GetSize().x;
+            int displayHeight = m_image.GetSize().y;
 
-                if(displayHeight > maxHeight)
-                {
-                    float ratio = displayHeight / maxHeight;
-                    displayWidth /= ratio;
-                    displayHeight /= ratio;
-                }
+            if (displayWidth > maxWidth)
+            {
+                float ratio = displayWidth / maxWidth;
+                displayWidth /= ratio;
+                displayHeight /= ratio;
+            }
 
-                ImGui::Image((void *)(intptr_t)m_imageHandle, ImVec2(displayWidth, displayHeight));
+            if (displayHeight > maxHeight)
+            {
+                float ratio = displayHeight / maxHeight;
+                displayWidth /= ratio;
+                displayHeight /= ratio;
+            }
+
+            ImGui::Image((void *)(intptr_t)m_imageHandle, ImVec2(displayWidth, displayHeight));
             ImGui::End();
         }
 
