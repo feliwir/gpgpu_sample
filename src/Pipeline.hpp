@@ -27,6 +27,11 @@ namespace gpgpu
       }
     }
 
+    inline bool Empty()
+    {
+      return m_processors.empty();
+    }
+
     inline Image &GetOutput()
     {
       return m_processors.back()->GetOutput();

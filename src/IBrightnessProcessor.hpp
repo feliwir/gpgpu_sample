@@ -4,7 +4,7 @@
 
 namespace gpgpu
 {
-  class ISaturationProcessor : public IProcessor
+  class IBrightnessProcessor : public IProcessor
   {
   public:
     virtual void SetFactor(float factor)

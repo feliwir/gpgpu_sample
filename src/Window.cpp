@@ -17,6 +17,10 @@
 #include "cpu/CPUSaturationProcessor.hpp"
 #include "mtcpu/MTCPUSaturationProcessor.hpp"
 
+// Brightness
+#include "cpu/CPUBrightnessProcessor.hpp"
+#include "mtcpu/MTCPUBrightnessProcessor.hpp"
+
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam)
 {
@@ -107,12 +111,18 @@ void gpgpu::Window::LoadImage()
 
 void gpgpu::Window::UpdateImage()
 {
+    if (m_pipeline.Empty())
+    {
+        return;
+    }
+
     std::cout << "Update image" << std::endl;
     auto beg = std::chrono::system_clock::now();
     m_pipeline.Process(m_input);
     auto end = std::chrono::system_clock::now();
 
-    std::cout << "Pipeline process: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - beg).count() << std::endl;
+    m_procTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - beg).count();
+    std::cout << "Pipeline process: " << m_procTime << "ms" << std::endl;
 
     std::cout << "Update image" << std::endl;
     // Upload output
@@ -141,22 +151,26 @@ void gpgpu::Window::CreatePipeline(int backend)
     {
     //CPU
     case 0:
-        m_blur = std::make_shared<CPUBlurProcessor>();
-        m_saturation = std::make_shared<CPUSaturationProcessor>();
+        m_blurProc = std::make_shared<CPUBlurProcessor>();
+        m_brightProc = std::make_shared<CPUBrightnessProcessor>();
+        m_satProc = std::make_shared<CPUSaturationProcessor>();
         break;
     case 1:
-        m_blur = std::make_shared<MTCPUBlurProcessor>();
-        m_saturation = std::make_shared<MTCPUSaturationProcessor>();
+        m_blurProc = std::make_shared<MTCPUBlurProcessor>();
+        m_brightProc = std::make_shared<MTCPUBrightnessProcessor>();
+        m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
-        m_blur = std::make_shared<SyclBlurProcessor>();
+        m_blurProc = std::make_shared<SyclBlurProcessor>();
         break;
     default:
         break;
     }
 
-    m_pipeline.AddProcessor(m_blur);
-    m_pipeline.AddProcessor(m_saturation);
+    m_satProc->SetFactor(m_saturation);
+
+    m_pipeline.AddProcessor(m_brightProc);
+    m_pipeline.AddProcessor(m_satProc);
 }
 
 void gpgpu::Window::Run()
@@ -171,8 +185,6 @@ void gpgpu::Window::Run()
 
     // Image settings
     int blur = 1;
-    float saturation = 0.0f;
-    float brightness = 0.0f;
 
     // Main loop
     bool render = false;
@@ -215,17 +227,23 @@ void gpgpu::Window::Run()
 
             if (ImGui::SliderInt("Blur", &blur, 1, 10))
             {
-                m_blur->SetRadius(blur);
+                m_blurProc->SetRadius(blur);
                 UpdateImage();
             }
 
-            if (ImGui::SliderFloat("Saturation", &saturation, -1.0f, 1.0f))
+            if (ImGui::SliderFloat("Saturation", &m_saturation, -1.0f, 1.0f))
             {
-                m_saturation->SetFactor(saturation);
+                m_satProc->SetFactor(m_saturation);
                 UpdateImage();
             }
 
-            ImGui::SliderFloat("Brightness", &brightness, -1.0f, 1.0f);
+            if (ImGui::SliderFloat("Brightness", &m_brightness, -1.0f, 1.0f))
+            {
+                m_brightProc->SetFactor(m_brightness);
+                UpdateImage();
+            }
+
+            ImGui::LabelText("Time", "Processed in %ums", m_procTime);
             ImGui::End();
 
             ImGui::Begin("Backend settings"); // Create a window called "Hello, world!" and append into it.
@@ -238,8 +256,8 @@ void gpgpu::Window::Run()
             ImGui::End();
 
             ImGui::Begin("Image", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-            int maxWidth = io.DisplaySize.x * 0.6f;
-            int maxHeight = io.DisplaySize.y * 0.6f;
+            int maxWidth = io.DisplaySize.x * 0.8f;
+            int maxHeight = io.DisplaySize.y * 0.8f;
 
             int displayWidth = m_input.GetSize().x;
             int displayHeight = m_input.GetSize().y;

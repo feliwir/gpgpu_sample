@@ -5,6 +5,7 @@
 #include <vector>
 #include "Image.hpp"
 #include "IBlurProcessor.hpp"
+#include "IBrightnessProcessor.hpp"
 #include "ISaturationProcessor.hpp"
 #include "Pipeline.hpp"
 
@@ -34,7 +35,13 @@ namespace gpgpu
     GLuint m_imageHandle = 0;
     Image m_input;
 
-    std::shared_ptr<IBlurProcessor> m_blur;
-    std::shared_ptr<ISaturationProcessor> m_saturation;
+    // Params
+    float m_saturation = 0.0f;
+    float m_brightness = 0.0f;
+
+    int m_procTime = 0;
+    std::shared_ptr<IBlurProcessor> m_blurProc;
+    std::shared_ptr<IBrightnessProcessor> m_brightProc;
+    std::shared_ptr<ISaturationProcessor> m_satProc;
   };
 } // namespace gpgpu

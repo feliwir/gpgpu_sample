@@ -7,7 +7,9 @@ set(IMGUI_CONTRIB   ${CMAKE_SOURCE_DIR}/contrib/imgui/imgui.cpp
 
 set(SRC_FILES main.cpp Window.cpp Image.cpp
     cpu/CPUBlurProcessor.cpp
+    cpu/CPUBrightnessProcessor.cpp
     cpu/CPUSaturationProcessor.cpp
+    mtcpu/MTCPUBrightnessProcessor.cpp
     mtcpu/MTCPUBlurProcessor.cpp
     mtcpu/MTCPUSaturationProcessor.cpp
     sycl/SyclBlurProcessor.cpp
