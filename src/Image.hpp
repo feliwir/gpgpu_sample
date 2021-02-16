@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <vector>
 #include <glm/glm.hpp>
 
 namespace gpgpu
@@ -9,11 +10,18 @@ namespace gpgpu
   public:
     bool Load(const std::filesystem::path &path);
 
+    inline void Resize(const glm::ivec2 &size)
+    {
+      m_size = size;
+      m_data.resize(size.x * size.y);
+    }
+
     inline const glm::ivec2 &GetSize() const { return m_size; }
-    inline const std::vector<float> &GetData() const { return m_data; }
+    inline std::vector<glm::vec4> &GetData() { return m_data; }
+    inline const std::vector<glm::vec4> &GetData() const { return m_data; }
 
   private:
     glm::ivec2 m_size;
-    std::vector<float> m_data;
+    std::vector<glm::vec4> m_data;
   };
 } // namespace gpgpu

@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "Window.hpp"
 #include "imgui.h"
 #include "imgui_freetype.h"
 #include "imgui_impl_opengl3.h"
@@ -8,7 +8,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
 
-constexpr int NUM_IMG_CHANNELS = 3;
+//Blur
+#include "cpu/CPUBlurProcessor.hpp"
+#include "mtcpu/MTCPUBlurProcessor.hpp"
+#include "sycl/SyclBlurProcessor.hpp"
+
+// Saturation
+#include "cpu/CPUSaturationProcessor.hpp"
+#include "mtcpu/MTCPUSaturationProcessor.hpp"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam)
@@ -71,6 +78,9 @@ gpgpu::Window::Window()
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
+
+    // Create pipeline
+    CreatePipeline(0);
 }
 
 gpgpu::Window::~Window()
@@ -88,7 +98,7 @@ void gpgpu::Window::LoadImage()
 
     if (file)
     {
-        if (m_image.Load(file))
+        if (m_input.Load(file))
         {
             UpdateImage();
         }
@@ -97,6 +107,15 @@ void gpgpu::Window::LoadImage()
 
 void gpgpu::Window::UpdateImage()
 {
+    std::cout << "Update image" << std::endl;
+    auto beg = std::chrono::system_clock::now();
+    m_pipeline.Process(m_input);
+    auto end = std::chrono::system_clock::now();
+
+    std::cout << "Pipeline process: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - beg).count() << std::endl;
+
+    std::cout << "Update image" << std::endl;
+    // Upload output
     if (m_imageHandle == 0)
     {
         glGenTextures(1, &m_imageHandle);
@@ -109,11 +128,35 @@ void gpgpu::Window::UpdateImage()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_image.GetSize().x, m_image.GetSize().y, 0, GL_RGB, GL_FLOAT, m_image.GetData().data());
+    Image &output = m_pipeline.GetOutput();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output.GetSize().x, output.GetSize().y, 0, GL_RGBA, GL_FLOAT, output.GetData().data());
 }
 
-void gpgpu::Window::UpdateBlur(int blur)
+void gpgpu::Window::CreatePipeline(int backend)
 {
+    std::cout << "Creating pipeline: " << backend << std::endl;
+    m_pipeline.Clear();
+
+    switch (backend)
+    {
+    //CPU
+    case 0:
+        m_blur = std::make_shared<CPUBlurProcessor>();
+        m_saturation = std::make_shared<CPUSaturationProcessor>();
+        break;
+    case 1:
+        m_blur = std::make_shared<MTCPUBlurProcessor>();
+        m_saturation = std::make_shared<MTCPUSaturationProcessor>();
+        break;
+    case 2:
+        m_blur = std::make_shared<SyclBlurProcessor>();
+        break;
+    default:
+        break;
+    }
+
+    m_pipeline.AddProcessor(m_blur);
+    m_pipeline.AddProcessor(m_saturation);
 }
 
 void gpgpu::Window::Run()
@@ -128,6 +171,7 @@ void gpgpu::Window::Run()
 
     // Image settings
     int blur = 1;
+    float saturation = 0.0f;
     float brightness = 0.0f;
 
     // Main loop
@@ -170,22 +214,35 @@ void gpgpu::Window::Run()
                 LoadImage();
 
             if (ImGui::SliderInt("Blur", &blur, 1, 10))
-                UpdateBlur(blur);
+            {
+                m_blur->SetRadius(blur);
+                UpdateImage();
+            }
+
+            if (ImGui::SliderFloat("Saturation", &saturation, -1.0f, 1.0f))
+            {
+                m_saturation->SetFactor(saturation);
+                UpdateImage();
+            }
 
             ImGui::SliderFloat("Brightness", &brightness, -1.0f, 1.0f);
             ImGui::End();
 
             ImGui::Begin("Backend settings"); // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Combo("Backend API", &current_backend, backends, IM_ARRAYSIZE(backends));
+            if (ImGui::Combo("Backend API", &current_backend, backends, IM_ARRAYSIZE(backends)))
+            {
+                CreatePipeline(current_backend);
+                UpdateImage();
+            }
             ImGui::End();
 
             ImGui::Begin("Image", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
             int maxWidth = io.DisplaySize.x * 0.6f;
             int maxHeight = io.DisplaySize.y * 0.6f;
 
-            int displayWidth = m_image.GetSize().x;
-            int displayHeight = m_image.GetSize().y;
+            int displayWidth = m_input.GetSize().x;
+            int displayHeight = m_input.GetSize().y;
 
             if (displayWidth > maxWidth)
             {

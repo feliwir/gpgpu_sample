@@ -5,16 +5,22 @@ set(IMGUI_CONTRIB   ${CMAKE_SOURCE_DIR}/contrib/imgui/imgui.cpp
                     ${CMAKE_SOURCE_DIR}/contrib/imgui/backends/imgui_impl_opengl3.cpp 
                     ${CMAKE_SOURCE_DIR}/contrib/imgui/backends/imgui_impl_sdl.cpp)
 
-set(SRC_FILES main.cpp window.cpp 
+set(SRC_FILES main.cpp Window.cpp Image.cpp
+    cpu/CPUBlurProcessor.cpp
+    cpu/CPUSaturationProcessor.cpp
+    mtcpu/MTCPUBlurProcessor.cpp
+    mtcpu/MTCPUSaturationProcessor.cpp
+    sycl/SyclBlurProcessor.cpp
     ${CMAKE_SOURCE_DIR}/contrib/tinyfiledialogs/tinyfiledialogs.c
     ${IMGUI_CONTRIB})
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(OpenMP)
 
 add_executable(gpgpu_sample ${SRC_FILES})
-target_link_libraries(gpgpu_sample SDL2 SDL2main OpenGL::GL GLEW::glew stdc++fs)
+target_link_libraries(gpgpu_sample SDL2 SDL2main OpenGL::GL GLEW::glew stdc++fs OpenMP::OpenMP_CXX)
 
 find_package(ComputeCpp REQUIRED)
 
@@ -28,6 +34,7 @@ if(ComputeCpp_FOUND)
 
     add_sycl_to_target(TARGET "gpgpu_sample" ${SRC_SYCL_FILES})
 endif()
+
 
 target_include_directories(gpgpu_sample PUBLIC 
     ${CMAKE_SOURCE_DIR}/contrib/glm

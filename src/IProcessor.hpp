@@ -6,7 +6,7 @@ namespace gpgpu
   class IProcessor
   {
   public:
-    virtual Image &Process(const Image &in);
+    virtual Image &Process(const Image &in) = 0;
 
     inline Image &GetOutput()
     {

@@ -29,7 +29,12 @@ namespace gpgpu
 
     inline Image &GetOutput()
     {
-      m_processors.back()->GetOutput();
+      return m_processors.back()->GetOutput();
+    }
+
+    inline void Clear()
+    {
+      m_processors.clear();
     }
 
   private:
