@@ -8,11 +8,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
 
-// Blur
-#include "cpu/CPUBlurProcessor.hpp"
-#include "mtcpu/MTCPUBlurProcessor.hpp"
-#include "sycl/SYCLBlurProcessor.hpp"
-
 // Saturation
 #include "cpu/CPUSaturationProcessor.hpp"
 #include "mtcpu/MTCPUSaturationProcessor.hpp"
@@ -108,6 +103,7 @@ void gpgpu::Window::LoadImage()
     std::vector<const char *> patterns;
     patterns.push_back("*.jpg");
     patterns.push_back("*.png");
+    patterns.push_back("*.hdr");
 
     auto file = tinyfd_openFileDialog("Select an image", "", patterns.size(), patterns.data(), "Image files", 0);
 
@@ -117,7 +113,11 @@ void gpgpu::Window::LoadImage()
         {
             UpdateImage();
         }
+        else
+        {
+            std::cerr << "Failed to load image!" << std::endl;
     }
+}
 }
 
 void gpgpu::Window::UpdateImage()
@@ -162,17 +162,14 @@ void gpgpu::Window::CreatePipeline(int backend)
     {
     //CPU
     case 0:
-        m_blurProc = std::make_shared<CPUBlurProcessor>();
         m_brightProc = std::make_shared<CPUBrightnessProcessor>();
         m_satProc = std::make_shared<CPUSaturationProcessor>();
         break;
     case 1:
-        m_blurProc = std::make_shared<MTCPUBlurProcessor>();
         m_brightProc = std::make_shared<MTCPUBrightnessProcessor>();
         m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
-        m_blurProc = std::make_shared<SYCLBlurProcessor>();
         m_brightProc = std::make_shared<SYCLBrightnessProcessor>();
         m_satProc = std::make_shared<SYCLSaturationProcessor>(m_queue);
         break;
@@ -195,9 +192,6 @@ void gpgpu::Window::Run()
     // Backend settings
     const char *backends[] = {"CPU", "Multicore CPU", "SYCL"};
     static int current_backend = 0;
-
-    // Image settings
-    int blur = 1;
 
     // Main loop
     bool render = false;
@@ -237,12 +231,6 @@ void gpgpu::Window::Run()
             ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
             if (ImGui::Button("Load image"))
                 LoadImage();
-
-            if (ImGui::SliderInt("Blur", &blur, 1, 10))
-            {
-                m_blurProc->SetRadius(blur);
-                UpdateImage();
-            }
 
             if (ImGui::SliderFloat("Saturation", &m_saturation, -1.0f, 1.0f))
             {

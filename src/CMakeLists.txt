@@ -6,13 +6,10 @@ set(IMGUI_CONTRIB   ${CMAKE_SOURCE_DIR}/contrib/imgui/imgui.cpp
                     ${CMAKE_SOURCE_DIR}/contrib/imgui/backends/imgui_impl_sdl.cpp)
 
 set(SRC_FILES main.cpp Window.cpp Image.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpu/CPUBlurProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu/CPUBrightnessProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu/CPUSaturationProcessor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtcpu/MTCPUBlurProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mtcpu/MTCPUBrightnessProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mtcpu/MTCPUSaturationProcessor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLBlurProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLBrightnessProcessor.cpp
     # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
     ${CMAKE_SOURCE_DIR}/contrib/tinyfiledialogs/tinyfiledialogs.c
@@ -36,7 +33,8 @@ if(ComputeCpp_FOUND)
         # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
         # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp
         # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
-        # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp 
+        # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationKernel.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp)
 

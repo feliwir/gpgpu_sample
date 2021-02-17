@@ -1,8 +1,7 @@
-#include <CL/sycl.hpp>
 #include "SYCLSaturationProcessor.hpp"
-#include <glm/glm.hpp>
+#include "SYCLSaturationKernel.hpp"
+#include <CL/sycl.hpp>
 #include <iostream>
-#include "../common/Saturation.hpp"
 
 gpgpu::Image &gpgpu::SYCLSaturationProcessor::Process(const Image &in)
 {
@@ -22,9 +21,8 @@ gpgpu::Image &gpgpu::SYCLSaturationProcessor::Process(const Image &in)
 
       const int num_pixels = in.GetSize().x * in.GetSize().y;
 
-      cgh.parallel_for(sycl::range<1>(num_pixels), [=](sycl::item<1> item) {
-        out_acc[item] = Saturation::Apply(in_acc[item], m_factor);
-      });
+      KernelFunctor fn{m_factor, in_acc, out_acc};
+      cgh.parallel_for(sycl::range<1>(num_pixels), fn);
     });
 
     process.wait();
