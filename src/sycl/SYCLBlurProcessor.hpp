@@ -3,7 +3,7 @@
 
 namespace gpgpu
 {
-  class SyclBlurProcessor : public IBlurProcessor
+  class SYCLBlurProcessor : public IBlurProcessor
   {
   public:
     virtual Image &Process(const Image &in) override;

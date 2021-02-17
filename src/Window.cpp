@@ -8,18 +8,20 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
 
-//Blur
+// Blur
 #include "cpu/CPUBlurProcessor.hpp"
 #include "mtcpu/MTCPUBlurProcessor.hpp"
-#include "sycl/SyclBlurProcessor.hpp"
+#include "sycl/SYCLBlurProcessor.hpp"
 
 // Saturation
 #include "cpu/CPUSaturationProcessor.hpp"
 #include "mtcpu/MTCPUSaturationProcessor.hpp"
+#include "sycl/SYCLSaturationProcessor.hpp"
 
 // Brightness
 #include "cpu/CPUBrightnessProcessor.hpp"
 #include "mtcpu/MTCPUBrightnessProcessor.hpp"
+#include "sycl/SYCLBrightnessProcessor.hpp"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam)
@@ -31,7 +33,7 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
 }
 
-gpgpu::Window::Window()
+gpgpu::Window::Window() : m_queue(sycl::default_selector{})
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
@@ -85,6 +87,15 @@ gpgpu::Window::Window()
 
     // Create pipeline
     CreatePipeline(0);
+
+    // SYCL
+    const auto &device = m_queue.get_device();
+    std::cout << "Using device: " << device.get_info<sycl::info::device::name>() << std::endl;
+
+    std::cout << "Image support: " << device.get_info<sycl::info::device::image_support>() << std::endl;
+    std::cout << "Image3D width: " << device.get_info<sycl::info::device::image3d_max_width>() << std::endl;
+    std::cout << "Image3D height: " << device.get_info<sycl::info::device::image3d_max_height>() << std::endl;
+    std::cout << "Image3D depth: " << device.get_info<sycl::info::device::image3d_max_depth>() << std::endl;
 }
 
 gpgpu::Window::~Window()
@@ -161,7 +172,9 @@ void gpgpu::Window::CreatePipeline(int backend)
         m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
-        m_blurProc = std::make_shared<SyclBlurProcessor>();
+        m_blurProc = std::make_shared<SYCLBlurProcessor>();
+        m_brightProc = std::make_shared<SYCLBrightnessProcessor>();
+        m_satProc = std::make_shared<SYCLSaturationProcessor>(m_queue);
         break;
     default:
         break;

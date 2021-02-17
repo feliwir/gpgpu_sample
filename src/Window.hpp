@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <memory>
 #include <vector>
+#include <CL/sycl.hpp>
 #include "Image.hpp"
 #include "IBlurProcessor.hpp"
 #include "IBrightnessProcessor.hpp"
@@ -43,5 +44,8 @@ namespace gpgpu
     std::shared_ptr<IBlurProcessor> m_blurProc;
     std::shared_ptr<IBrightnessProcessor> m_brightProc;
     std::shared_ptr<ISaturationProcessor> m_satProc;
+
+    // Sycl
+    sycl::queue m_queue;
   };
 } // namespace gpgpu
