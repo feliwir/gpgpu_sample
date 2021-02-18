@@ -16,6 +16,6 @@ namespace gpgpu
     virtual void Resize(const glm::ivec2 &size) = 0;
 
   protected:
-    glm::ivec2 m_size;
+    glm::ivec2 m_size = glm::ivec2(0);
   };
 } // namespace gpgpu

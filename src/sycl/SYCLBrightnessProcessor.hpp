@@ -7,9 +7,7 @@ namespace gpgpu
   class SYCLBrightnessProcessor : public IBrightnessProcessor
   {
   public:
-    inline SYCLBrightnessProcessor(cl::sycl::queue &queue) : m_queue(queue)
-    {
-    }
+    SYCLBrightnessProcessor(cl::sycl::queue &queue);
 
     virtual void Process(std::shared_ptr<IImage> in) override;
 

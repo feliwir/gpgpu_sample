@@ -7,11 +7,15 @@ namespace gpgpu
   class SYCLImage : public IImage
   {
   public:
-    static std::shared_ptr<IImage> From(std::shared_ptr<IImage> src);
+    inline SYCLImage(sycl::queue &queue) : m_queue(queue)
+    {
+    }
+
+    static std::shared_ptr<IImage> From(std::shared_ptr<IImage> src, sycl::queue& queue);
 
     inline sycl::buffer<glm::vec4, 1> &GetBuffer()
     {
-      return m_buffer;
+      return m_dev_buffer;
     }
 
     // Inherited
@@ -20,6 +24,8 @@ namespace gpgpu
     virtual void Resize(const glm::ivec2 &size) override;
 
   private:
-    sycl::buffer<glm::vec4, 1> m_buffer;
+    std::vector<glm::vec4> m_host_data;
+    sycl::queue &m_queue;
+    sycl::buffer<glm::vec4, 1> m_dev_buffer;
   };
 } // namespace gpgpu

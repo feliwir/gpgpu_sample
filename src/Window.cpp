@@ -175,7 +175,7 @@ void gpgpu::Window::CreatePipeline(int backend)
         m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
-        m_input = SYCLImage::From(m_input);
+        m_input = SYCLImage::From(m_input, m_queue);
         m_brightProc = std::make_shared<SYCLBrightnessProcessor>(m_queue);
         m_satProc = std::make_shared<SYCLSaturationProcessor>(m_queue);
         break;

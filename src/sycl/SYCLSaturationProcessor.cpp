@@ -3,7 +3,7 @@
 #include "../SYCLImage.hpp"
 #include <iostream>
 
-struct KernelFunctor
+struct SaturationKernel
 {
   void operator()(cl::sycl::item<1> item)
   {
@@ -14,6 +14,11 @@ struct KernelFunctor
   sycl::accessor<glm::vec4, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
   sycl::accessor<glm::vec4, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
 };
+
+gpgpu::SYCLSaturationProcessor::SYCLSaturationProcessor(cl::sycl::queue &queue) : m_queue(queue)
+{
+  m_output = std::make_shared<SYCLImage>(m_queue);
+}
 
 void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
 {
@@ -33,7 +38,7 @@ void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
 
       const int num_pixels = in->GetSize().x * in->GetSize().y;
 
-      KernelFunctor fn{m_factor, in_acc, out_acc};
+      SaturationKernel fn{m_factor, in_acc, out_acc};
       cgh.parallel_for(sycl::range<1>(num_pixels), fn);
     });
 
