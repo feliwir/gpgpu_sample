@@ -1,15 +1,27 @@
 #include "SYCLSaturationProcessor.hpp"
-#include "SYCLSaturationKernel.hpp"
-#include <CL/sycl.hpp>
+#include "../common/Saturation.hpp"
+#include "../SYCLImage.hpp"
 #include <iostream>
 
-gpgpu::Image &gpgpu::SYCLSaturationProcessor::Process(const Image &in)
+struct KernelFunctor
 {
-  m_output.Resize(in.GetSize());
+  void operator()(cl::sycl::item<1> item)
+  {
+    m_out_acc[item] = gpgpu::Saturation::Apply(m_in_acc[item], m_factor);
+  }
+
+  float m_factor;
+  sycl::accessor<glm::vec4, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
+  sycl::accessor<glm::vec4, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
+};
+
+void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
+{
+  m_output->Resize(in->GetSize());
 
   // image buffer
-  auto in_buf = sycl::buffer<glm::vec4, 1>(in.GetData().data(), sycl::range<1>(in.GetData().size()));
-  auto out_buf = sycl::buffer<glm::vec4, 1>(m_output.GetData().data(), sycl::range<1>(m_output.GetData().size()));
+  auto in_buf = std::dynamic_pointer_cast<SYCLImage>(in)->GetBuffer();
+  auto out_buf = std::dynamic_pointer_cast<SYCLImage>(m_output)->GetBuffer();
 
   // submit command group on device
   try
@@ -19,7 +31,7 @@ gpgpu::Image &gpgpu::SYCLSaturationProcessor::Process(const Image &in)
       auto in_acc = in_buf.get_access<sycl::access::mode::read>(cgh);
       auto out_acc = out_buf.get_access<sycl::access::mode::write>(cgh);
 
-      const int num_pixels = in.GetSize().x * in.GetSize().y;
+      const int num_pixels = in->GetSize().x * in->GetSize().y;
 
       KernelFunctor fn{m_factor, in_acc, out_acc};
       cgh.parallel_for(sycl::range<1>(num_pixels), fn);
@@ -31,6 +43,4 @@ gpgpu::Image &gpgpu::SYCLSaturationProcessor::Process(const Image &in)
   {
     std::cout << e.what();
   }
-
-  return m_output;
 }

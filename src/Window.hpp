@@ -4,14 +4,13 @@
 #include <memory>
 #include <vector>
 #include <CL/sycl.hpp>
-#include "Image.hpp"
+#include "IImage.hpp"
 #include "IBrightnessProcessor.hpp"
 #include "ISaturationProcessor.hpp"
 #include "Pipeline.hpp"
 
 namespace gpgpu
 {
-
   class Window
   {
   public:
@@ -33,7 +32,7 @@ namespace gpgpu
 
     Pipeline m_pipeline;
     GLuint m_imageHandle = 0;
-    Image m_input;
+    std::shared_ptr<IImage> m_input;
 
     // Params
     float m_saturation = 0.0f;

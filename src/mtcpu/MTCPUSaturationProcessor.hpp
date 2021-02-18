@@ -6,6 +6,7 @@ namespace gpgpu
   class MTCPUSaturationProcessor : public ISaturationProcessor
   {
   public:
-    virtual Image &Process(const Image &in) override;
+    MTCPUSaturationProcessor();
+    virtual void Process(std::shared_ptr<IImage> in) override;
   };
 } // namespace gpgpu

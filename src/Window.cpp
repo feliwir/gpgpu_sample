@@ -8,6 +8,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
 
+#include "CPUImage.hpp"
+#include "SYCLImage.hpp"
+
 // Saturation
 #include "cpu/CPUSaturationProcessor.hpp"
 #include "mtcpu/MTCPUSaturationProcessor.hpp"
@@ -109,7 +112,7 @@ void gpgpu::Window::LoadImage()
 
     if (file)
     {
-        if (m_input.Load(file))
+        if (m_input->Load(file))
         {
             UpdateImage();
         }
@@ -149,8 +152,8 @@ void gpgpu::Window::UpdateImage()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
-    Image &output = m_pipeline.GetOutput();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output.GetSize().x, output.GetSize().y, 0, GL_RGBA, GL_FLOAT, output.GetData().data());
+    auto output = m_pipeline.GetOutput();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGBA, GL_FLOAT, output->GetData().data());
 }
 
 void gpgpu::Window::CreatePipeline(int backend)
@@ -162,15 +165,18 @@ void gpgpu::Window::CreatePipeline(int backend)
     {
     //CPU
     case 0:
+        m_input = CPUImage::From(m_input);
         m_brightProc = std::make_shared<CPUBrightnessProcessor>();
         m_satProc = std::make_shared<CPUSaturationProcessor>();
         break;
     case 1:
+        m_input = CPUImage::From(m_input);
         m_brightProc = std::make_shared<MTCPUBrightnessProcessor>();
         m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
-        m_brightProc = std::make_shared<SYCLBrightnessProcessor>();
+        m_input = SYCLImage::From(m_input);
+        m_brightProc = std::make_shared<SYCLBrightnessProcessor>(m_queue);
         m_satProc = std::make_shared<SYCLSaturationProcessor>(m_queue);
         break;
     default:
@@ -260,8 +266,8 @@ void gpgpu::Window::Run()
             int maxWidth = io.DisplaySize.x * 0.8f;
             int maxHeight = io.DisplaySize.y * 0.8f;
 
-            int displayWidth = m_input.GetSize().x;
-            int displayHeight = m_input.GetSize().y;
+            int displayWidth = m_input->GetSize().x;
+            int displayHeight = m_input->GetSize().y;
 
             if (displayWidth > maxWidth)
             {

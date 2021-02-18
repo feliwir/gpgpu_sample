@@ -1,26 +1,23 @@
 #include "MTCPUSaturationProcessor.hpp"
 #include <glm/glm.hpp>
 #include "../common/Saturation.hpp"
-#include <algorithm>
-#include <execution>
+#include "../CPUImage.hpp"
 
-gpgpu::Image &gpgpu::MTCPUSaturationProcessor::Process(const Image &in)
+gpgpu::MTCPUSaturationProcessor::MTCPUSaturationProcessor()
 {
-  m_output.Resize(in.GetSize());
+  m_output = std::make_shared<CPUImage>();
+}
 
-  // std::transform(std::execution::par_unseq, in.GetData().begin(), in.GetData().end(), m_output.GetData().begin(),
-  //                [this](glm::vec4 inPixel) {
-  //                  return Saturation::Apply(inPixel, m_factor);
-  //                });
+void gpgpu::MTCPUSaturationProcessor::Process(std::shared_ptr<IImage> in)
+{
+  m_output->Resize(in->GetSize());
 
-  #pragma omp parallel for
-  for (int i = 0; i < in.GetSize().x * in.GetSize().y; i++)
+#pragma omp parallel for
+  for (int i = 0; i < in->GetSize().x * in->GetSize().y; i++)
   {
-    const auto &inPixel = in.GetData()[i];
-    auto &outPixel = m_output.GetData()[i];
+    const auto &inPixel = in->GetData()[i];
+    auto &outPixel = m_output->GetData()[i];
 
     outPixel = Saturation::Apply(inPixel, m_factor);
   }
-
-  return m_output;
 }

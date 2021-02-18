@@ -5,7 +5,7 @@ set(IMGUI_CONTRIB   ${CMAKE_SOURCE_DIR}/contrib/imgui/imgui.cpp
                     ${CMAKE_SOURCE_DIR}/contrib/imgui/backends/imgui_impl_opengl3.cpp 
                     ${CMAKE_SOURCE_DIR}/contrib/imgui/backends/imgui_impl_sdl.cpp)
 
-set(SRC_FILES main.cpp Window.cpp Image.cpp
+set(SRC_FILES main.cpp Window.cpp IImage.cpp CPUImage.cpp SYCLImage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu/CPUBrightnessProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu/CPUSaturationProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mtcpu/MTCPUBrightnessProcessor.cpp
@@ -32,15 +32,14 @@ if(ComputeCpp_FOUND)
     set(SRC_SYCL_FILES
         # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
         # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp
-        # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
-        # ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationKernel.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLBrightnessProcessor.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLBrightnessProcessor.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/sycl/SYCLSaturationProcessor.hpp)
 
     target_sources(gpgpu_sample PRIVATE ${SRC_SYCL_FILES})
 
-    add_sycl_to_target(TARGET "gpgpu_sample" ${SRC_SYCL_FILES})
+    add_sycl_to_target(TARGET "gpgpu_sample" SOURCES ${SRC_SYCL_FILES})
 endif()
 
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include "IImage.hpp"
 #include "IProcessor.hpp"
 
 namespace gpgpu
@@ -13,7 +14,7 @@ namespace gpgpu
       m_processors.emplace_back(p);
     }
 
-    inline void Process(const Image &img)
+    inline void Process(std::shared_ptr<IImage> img)
     {
       if (m_processors.empty())
       {
@@ -32,7 +33,7 @@ namespace gpgpu
       return m_processors.empty();
     }
 
-    inline Image &GetOutput()
+    inline std::shared_ptr<IImage> GetOutput()
     {
       return m_processors.back()->GetOutput();
     }

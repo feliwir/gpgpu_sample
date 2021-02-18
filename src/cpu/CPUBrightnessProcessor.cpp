@@ -1,17 +1,22 @@
 #include "CPUBrightnessProcessor.hpp"
 #include <glm/glm.hpp>
 #include "../common/Brightness.hpp"
+#include "../CPUImage.hpp"
 
-gpgpu::Image &gpgpu::CPUBrightnessProcessor::Process(const Image &in)
+gpgpu::CPUBrightnessProcessor::CPUBrightnessProcessor()
 {
-  m_output.Resize(in.GetSize());
+  m_output = std::make_shared<CPUImage>();
+}
 
-  for (int i = 0; i < in.GetSize().x * in.GetSize().y; i++)
+void gpgpu::CPUBrightnessProcessor::Process(std::shared_ptr<IImage> in)
+{
+  m_output->Resize(in->GetSize());
+
+  for (int i = 0; i < in->GetSize().x * in->GetSize().y; i++)
   {
-    const auto &inPixel = in.GetData()[i];
-    auto &outPixel = m_output.GetData()[i];
+    const auto &inPixel = in->GetData()[i];
+    auto &outPixel = m_output->GetData()[i];
 
     outPixel = Brightness::Apply(inPixel, m_factor);
   }
-  return m_output;
 }

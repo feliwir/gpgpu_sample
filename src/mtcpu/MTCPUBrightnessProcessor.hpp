@@ -6,6 +6,7 @@ namespace gpgpu
   class MTCPUBrightnessProcessor : public IBrightnessProcessor
   {
   public:
-    virtual Image &Process(const Image &in) override;
+    MTCPUBrightnessProcessor();
+    virtual void Process(std::shared_ptr<IImage> in) override;
   };
 } // namespace gpgpu
