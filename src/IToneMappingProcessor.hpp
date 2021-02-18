@@ -17,7 +17,7 @@ namespace gpgpu
       m_exposure = exposure;
     }
   protected:
-    float m_gamma = 2.2f;
+    float m_gamma = 2.0f;
     float m_exposure = 1.0f;
   };
 } // namespace gpgpu

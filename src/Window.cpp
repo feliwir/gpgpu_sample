@@ -198,6 +198,15 @@ void gpgpu::Window::CreatePipeline(int backend)
     m_pipeline.AddProcessor(m_satProc);
 }
 
+void gpgpu::Window::Reset()
+{
+    m_exposure = 1.0f;
+    m_gamma = 2.0f;
+    m_brightness = 0.0f;
+    m_saturation = 0.0f;
+    LoadImage();
+}
+
 void gpgpu::Window::Run()
 {
     glm::vec4 clearColor(0.45f, 0.55f, 0.60f, 1.00f);
@@ -244,8 +253,13 @@ void gpgpu::Window::Run()
             static int counter = 0;
 
             ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
+
             if (ImGui::Button("Load image"))
                 LoadImage();
+
+            ImGui::SameLine();
+            if (ImGui::Button("Reset"))
+                Reset();
 
             ImGui::Text("Tonemapping");
             if (ImGui::SliderFloat("Exposure", &m_exposure, 0.01f, 5.0f))

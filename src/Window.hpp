@@ -25,6 +25,8 @@ namespace gpgpu
 
     void CreatePipeline(int backend);
 
+    void Reset();
+
     GLuint m_glTexture;
     SDL_GLContext m_context;
     SDL_Window *m_window = nullptr;
@@ -37,7 +39,7 @@ namespace gpgpu
 
     // Params
     float m_exposure = 1.0f;
-    float m_gamma = 2.2f;
+    float m_gamma = 2.0f;
     float m_saturation = 0.0f;
     float m_brightness = 0.0f;
 
