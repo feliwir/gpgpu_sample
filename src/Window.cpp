@@ -21,6 +21,11 @@
 #include "mtcpu/MTCPUBrightnessProcessor.hpp"
 #include "sycl/SYCLBrightnessProcessor.hpp"
 
+// Tone mapping
+#include "cpu/CPUToneMappingProcessor.hpp"
+#include "mtcpu/MTCPUToneMappingProcessor.hpp"
+#include "sycl/SYCLToneMappingProcessor.hpp"
+
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam)
 {
@@ -119,8 +124,8 @@ void gpgpu::Window::LoadImage()
         else
         {
             std::cerr << "Failed to load image!" << std::endl;
+        }
     }
-}
 }
 
 void gpgpu::Window::UpdateImage()
@@ -166,16 +171,19 @@ void gpgpu::Window::CreatePipeline(int backend)
     //CPU
     case 0:
         m_input = CPUImage::From(m_input);
+        m_toneProc = std::make_shared<CPUToneMappingProcessor>();
         m_brightProc = std::make_shared<CPUBrightnessProcessor>();
         m_satProc = std::make_shared<CPUSaturationProcessor>();
         break;
     case 1:
         m_input = CPUImage::From(m_input);
+        m_toneProc = std::make_shared<MTCPUToneMappingProcessor>();
         m_brightProc = std::make_shared<MTCPUBrightnessProcessor>();
         m_satProc = std::make_shared<MTCPUSaturationProcessor>();
         break;
     case 2:
         m_input = SYCLImage::From(m_input, m_queue);
+        m_toneProc = std::make_shared<SYCLToneMappingProcessor>(m_queue);
         m_brightProc = std::make_shared<SYCLBrightnessProcessor>(m_queue);
         m_satProc = std::make_shared<SYCLSaturationProcessor>(m_queue);
         break;
@@ -185,6 +193,7 @@ void gpgpu::Window::CreatePipeline(int backend)
 
     m_satProc->SetFactor(m_saturation);
 
+    m_pipeline.AddProcessor(m_toneProc);
     m_pipeline.AddProcessor(m_brightProc);
     m_pipeline.AddProcessor(m_satProc);
 }
@@ -238,6 +247,20 @@ void gpgpu::Window::Run()
             if (ImGui::Button("Load image"))
                 LoadImage();
 
+            ImGui::Text("Tonemapping");
+            if (ImGui::SliderFloat("Exposure", &m_exposure, 0.01f, 5.0f))
+            {
+                m_toneProc->SetExposure(m_exposure);
+                UpdateImage();
+            }
+
+            if (ImGui::SliderFloat("Gamma", &m_gamma, 1.0f, 3.0f))
+            {
+                m_toneProc->SetGamma(m_gamma);
+                UpdateImage();
+            }
+
+            ImGui::Text("General");
             if (ImGui::SliderFloat("Saturation", &m_saturation, -1.0f, 1.0f))
             {
                 m_satProc->SetFactor(m_saturation);

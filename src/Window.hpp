@@ -7,6 +7,7 @@
 #include "IImage.hpp"
 #include "IBrightnessProcessor.hpp"
 #include "ISaturationProcessor.hpp"
+#include "IToneMappingProcessor.hpp"
 #include "Pipeline.hpp"
 
 namespace gpgpu
@@ -35,12 +36,15 @@ namespace gpgpu
     std::shared_ptr<IImage> m_input;
 
     // Params
+    float m_exposure = 1.0f;
+    float m_gamma = 2.2f;
     float m_saturation = 0.0f;
     float m_brightness = 0.0f;
 
     int m_procTime = 0;
     std::shared_ptr<IBrightnessProcessor> m_brightProc;
     std::shared_ptr<ISaturationProcessor> m_satProc;
+    std::shared_ptr<IToneMappingProcessor> m_toneProc;
 
     // Sycl
     sycl::queue m_queue;
