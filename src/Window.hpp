@@ -36,8 +36,10 @@ namespace gpgpu
     Pipeline m_pipeline;
     GLuint m_imageHandle = 0;
     std::shared_ptr<IImage> m_input;
+    std::string m_filename;
 
     // Params
+    bool m_useTonemap = true;
     float m_exposure = 1.0f;
     float m_gamma = 2.0f;
     float m_saturation = 0.0f;

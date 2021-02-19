@@ -13,7 +13,11 @@ namespace gpgpu
       return m_output;
     }
 
+    inline void SetActive(bool active) { m_active = active; }
+    inline bool GetActive() const { return m_active; }
+
   protected:
+    bool m_active = true;
     std::shared_ptr<IImage> m_output;
   };
 } // namespace gpgpu

@@ -119,6 +119,7 @@ void gpgpu::Window::LoadImage()
     {
         if (m_input->Load(file))
         {
+            m_filename = std::filesystem::path(file).filename().string();
             UpdateImage();
         }
         else
@@ -191,7 +192,10 @@ void gpgpu::Window::CreatePipeline(int backend)
         break;
     }
 
+    m_toneProc->SetGamma(m_gamma);
+    m_toneProc->SetExposure(m_exposure);
     m_satProc->SetFactor(m_saturation);
+    m_brightProc->SetFactor(m_brightness);
 
     m_pipeline.AddProcessor(m_toneProc);
     m_pipeline.AddProcessor(m_brightProc);
@@ -200,11 +204,19 @@ void gpgpu::Window::CreatePipeline(int backend)
 
 void gpgpu::Window::Reset()
 {
+    m_useTonemap = true;
     m_exposure = 1.0f;
     m_gamma = 2.0f;
     m_brightness = 0.0f;
     m_saturation = 0.0f;
-    LoadImage();
+
+    m_toneProc->SetActive(m_useTonemap);
+    m_toneProc->SetExposure(m_exposure);
+    m_toneProc->SetGamma(m_gamma);
+    m_brightProc->SetFactor(m_brightness);
+    m_satProc->SetFactor(m_saturation);
+
+    UpdateImage();
 }
 
 void gpgpu::Window::Run()
@@ -262,6 +274,12 @@ void gpgpu::Window::Run()
                 Reset();
 
             ImGui::Text("Tonemapping");
+            if (ImGui::Checkbox("Enable", &m_useTonemap))
+            {
+                m_toneProc->SetActive(m_useTonemap);
+                UpdateImage();
+            }
+
             if (ImGui::SliderFloat("Exposure", &m_exposure, 0.01f, 5.0f))
             {
                 m_toneProc->SetExposure(m_exposure);
@@ -299,7 +317,8 @@ void gpgpu::Window::Run()
             }
             ImGui::End();
 
-            ImGui::Begin("Image", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            std::string img_name = "Image (" + m_filename + "," + std::to_string(m_input->GetSize().x) + "px*" + std::to_string(m_input->GetSize().y) + "px)";
+            ImGui::Begin(img_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
             int maxWidth = io.DisplaySize.x * 0.8f;
             int maxHeight = io.DisplaySize.y * 0.8f;
 
@@ -308,14 +327,14 @@ void gpgpu::Window::Run()
 
             if (displayWidth > maxWidth)
             {
-                float ratio = displayWidth / maxWidth;
+                float ratio = displayWidth / (float)maxWidth;
                 displayWidth /= ratio;
                 displayHeight /= ratio;
             }
 
             if (displayHeight > maxHeight)
             {
-                float ratio = displayHeight / maxHeight;
+                float ratio = displayHeight / (float)maxHeight;
                 displayWidth /= ratio;
                 displayHeight /= ratio;
             }

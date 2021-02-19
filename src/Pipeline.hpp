@@ -21,10 +21,15 @@ namespace gpgpu
         return;
       }
 
-      m_processors.front()->Process(img);
-      for (int i = 1; i < m_processors.size(); i++)
+      auto prevOutput = img;
+      for (int i = 0; i < m_processors.size(); i++)
       {
-        m_processors[i]->Process(m_processors[i - 1]->GetOutput());
+        auto current = m_processors[i];
+        if (!current->GetActive())
+          continue;
+
+        current->Process(prevOutput);
+        prevOutput = current->GetOutput();
       }
     }
 
