@@ -4,18 +4,18 @@
 
 namespace gpgpu
 {
-  class SYCLImage : public IImage
-  {
+class SYCLImage : public IImage
+{
   public:
     inline SYCLImage(sycl::queue &queue) : m_queue(queue)
     {
     }
 
-    static std::shared_ptr<IImage> From(std::shared_ptr<IImage> src, sycl::queue& queue);
+    static std::shared_ptr<IImage> From(std::shared_ptr<IImage> src, sycl::queue &queue);
 
     inline sycl::buffer<glm::vec4, 1> &GetBuffer()
     {
-      return m_dev_buffer;
+        return m_dev_buffer;
     }
 
     // Inherited
@@ -27,5 +27,5 @@ namespace gpgpu
     std::vector<glm::vec4> m_host_data;
     sycl::queue &m_queue;
     sycl::buffer<glm::vec4, 1> m_dev_buffer;
-  };
+};
 } // namespace gpgpu

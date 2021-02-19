@@ -3,10 +3,10 @@
 
 namespace gpgpu
 {
-  class CPUBrightnessProcessor : public IBrightnessProcessor
-  {
+class CPUBrightnessProcessor : public IBrightnessProcessor
+{
   public:
     CPUBrightnessProcessor();
     virtual void Process(std::shared_ptr<IImage> in) override;
-  };
+};
 } // namespace gpgpu

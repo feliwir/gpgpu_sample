@@ -1,19 +1,19 @@
 #pragma once
+#include "IBrightnessProcessor.hpp"
+#include "IImage.hpp"
+#include "ISaturationProcessor.hpp"
+#include "IToneMappingProcessor.hpp"
+#include "Pipeline.hpp"
+#include <CL/sycl.hpp>
 #include <GL/glew.h>
 #include <SDL.h>
 #include <memory>
 #include <vector>
-#include <CL/sycl.hpp>
-#include "IImage.hpp"
-#include "IBrightnessProcessor.hpp"
-#include "ISaturationProcessor.hpp"
-#include "IToneMappingProcessor.hpp"
-#include "Pipeline.hpp"
 
 namespace gpgpu
 {
-  class Window
-  {
+class Window
+{
   public:
     Window();
     ~Window();
@@ -52,5 +52,5 @@ namespace gpgpu
 
     // Sycl
     sycl::queue m_queue;
-  };
+};
 } // namespace gpgpu

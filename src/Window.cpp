@@ -3,9 +3,9 @@
 #include "imgui_freetype.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
-#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include <tinyfiledialogs.h>
 
 #include "CPUImage.hpp"
@@ -57,7 +57,8 @@ gpgpu::Window::Window() : m_queue(sycl::default_selector{})
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_WindowFlags window_flags =
         (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    m_window = SDL_CreateWindow("gpgpu_sample", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    m_window =
+        SDL_CreateWindow("gpgpu_sample", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     m_context = SDL_GL_CreateContext(m_window);
     SDL_GL_MakeCurrent(m_window, m_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -155,11 +156,13 @@ void gpgpu::Window::UpdateImage()
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
     auto output = m_pipeline.GetOutput();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGBA, GL_FLOAT, output->GetData().data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGBA, GL_FLOAT,
+                 output->GetData().data());
 }
 
 void gpgpu::Window::CreatePipeline(int backend)
@@ -169,7 +172,7 @@ void gpgpu::Window::CreatePipeline(int backend)
 
     switch (backend)
     {
-    //CPU
+    // CPU
     case 0:
         m_input = CPUImage::From(m_input);
         m_toneProc = std::make_shared<CPUToneMappingProcessor>();
@@ -317,7 +320,8 @@ void gpgpu::Window::Run()
             }
             ImGui::End();
 
-            std::string img_name = "Image (" + m_filename + "," + std::to_string(m_input->GetSize().x) + "px*" + std::to_string(m_input->GetSize().y) + "px)";
+            std::string img_name = "Image (" + m_filename + "," + std::to_string(m_input->GetSize().x) + "px*" +
+                                   std::to_string(m_input->GetSize().y) + "px)";
             ImGui::Begin(img_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
             int maxWidth = io.DisplaySize.x * 0.8f;
             int maxHeight = io.DisplaySize.y * 0.8f;

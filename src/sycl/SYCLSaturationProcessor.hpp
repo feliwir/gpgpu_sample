@@ -4,8 +4,8 @@
 
 namespace gpgpu
 {
-  class SYCLSaturationProcessor : public ISaturationProcessor
-  {
+class SYCLSaturationProcessor : public ISaturationProcessor
+{
   public:
     SYCLSaturationProcessor(cl::sycl::queue &queue);
 
@@ -13,5 +13,5 @@ namespace gpgpu
 
   private:
     cl::sycl::queue &m_queue;
-  };
+};
 } // namespace gpgpu

@@ -4,8 +4,8 @@
 
 namespace gpgpu
 {
-  class SYCLBrightnessProcessor : public IBrightnessProcessor
-  {
+class SYCLBrightnessProcessor : public IBrightnessProcessor
+{
   public:
     SYCLBrightnessProcessor(cl::sycl::queue &queue);
 
@@ -13,5 +13,5 @@ namespace gpgpu
 
   private:
     cl::sycl::queue &m_queue;
-  };
+};
 } // namespace gpgpu
