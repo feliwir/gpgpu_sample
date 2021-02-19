@@ -30,7 +30,9 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
                                 const GLchar *message, const void *userParam)
 {
     if (type != GL_DEBUG_TYPE_ERROR)
+    {
         return;
+    }
 
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
@@ -250,11 +252,15 @@ void gpgpu::Window::Run()
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
+            {
                 done = true;
+            }
 
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
                 event.window.windowID == SDL_GetWindowID(m_window))
+            {
                 done = true;
+            }
         }
 
         // Start the Dear ImGui frame
@@ -270,11 +276,15 @@ void gpgpu::Window::Run()
             ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
 
             if (ImGui::Button("Load image"))
+            {
                 LoadImage();
+            }
 
             ImGui::SameLine();
             if (ImGui::Button("Reset"))
+            {
                 Reset();
+            }
 
             ImGui::Text("Tonemapping");
             if (ImGui::Checkbox("Enable", &m_useTonemap))

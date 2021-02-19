@@ -19,9 +19,9 @@ class SYCLImage : public IImage
     }
 
     // Inherited
-    virtual std::vector<glm::vec4> &GetData() override;
-    virtual void Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data) override;
-    virtual void Resize(const glm::ivec2 &size) override;
+    std::vector<glm::vec4> &GetData() override;
+    void Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data) override;
+    void Resize(const glm::ivec2 &size) override;
 
   private:
     std::vector<glm::vec4> m_host_data;

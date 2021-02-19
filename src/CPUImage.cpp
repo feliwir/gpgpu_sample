@@ -28,7 +28,9 @@ std::shared_ptr<gpgpu::IImage> gpgpu::CPUImage::From(std::shared_ptr<gpgpu::IIma
 void gpgpu::CPUImage::Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data)
 {
     if (data.size() != size.x * size.y)
+    {
         std::cerr << "Size missmatch" << std::endl;
+    }
     m_size = size;
     m_data = data;
 }

@@ -2,6 +2,7 @@
 #include "IImage.hpp"
 #include "IProcessor.hpp"
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace gpgpu
@@ -9,7 +10,7 @@ namespace gpgpu
 class Pipeline
 {
   public:
-    inline void AddProcessor(std::shared_ptr<IProcessor> p)
+    inline void AddProcessor(const std::shared_ptr<IProcessor> &p)
     {
         m_processors.emplace_back(p);
     }
@@ -21,12 +22,13 @@ class Pipeline
             return;
         }
 
-        auto prevOutput = img;
-        for (int i = 0; i < m_processors.size(); i++)
+        auto prevOutput = std::move(img);
+        for (auto current : m_processors)
         {
-            auto current = m_processors[i];
             if (!current->GetActive())
+            {
                 continue;
+            }
 
             current->Process(prevOutput);
             prevOutput = current->GetOutput();
