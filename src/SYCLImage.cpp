@@ -20,7 +20,7 @@ std::shared_ptr<gpgpu::IImage> gpgpu::SYCLImage::From(std::shared_ptr<gpgpu::IIm
     return result;
 }
 
-void gpgpu::SYCLImage::Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data)
+void gpgpu::SYCLImage::Create(const glm::ivec2 &size, const std::vector<glm::vec3> &data)
 {
     if (data.size() != size.x * size.y)
     {
@@ -34,13 +34,13 @@ void gpgpu::SYCLImage::Create(const glm::ivec2 &size, const std::vector<glm::vec
         return;
     }
 
-    auto in_buf = sycl::buffer<glm::vec4, 1>(data.data(), sycl::range<1>(data.size()));
+    auto in_buf = sycl::buffer<glm::vec3, 1>(data.data(), sycl::range<1>(data.size()));
 
     try
     {
         m_queue.submit([&](cl::sycl::handler &cgh) {
             auto in_acc = in_buf.get_access<sycl::access::mode::read>(cgh);
-            auto out_acc = m_dev_buffer.get_access<sycl::access::mode::write>(cgh);
+            auto out_acc = m_dev_buffer->get_access<sycl::access::mode::write>(cgh);
             cgh.copy(in_acc, out_acc);
         });
     }
@@ -50,7 +50,7 @@ void gpgpu::SYCLImage::Create(const glm::ivec2 &size, const std::vector<glm::vec
     }
 }
 
-std::vector<glm::vec4> &gpgpu::SYCLImage::GetData()
+std::vector<glm::vec3> &gpgpu::SYCLImage::GetData()
 {
     m_host_data.resize(m_size.x * m_size.y);
 
@@ -59,12 +59,12 @@ std::vector<glm::vec4> &gpgpu::SYCLImage::GetData()
         return m_host_data;
     }
 
-    auto out_buf = sycl::buffer<glm::vec4, 1>(m_host_data.data(), sycl::range<1>(m_host_data.size()));
+    auto out_buf = sycl::buffer<glm::vec3, 1>(m_host_data.data(), sycl::range<1>(m_host_data.size()));
 
     try
     {
         m_queue.submit([&](cl::sycl::handler &cgh) {
-            auto in_acc = m_dev_buffer.get_access<sycl::access::mode::read>(cgh);
+            auto in_acc = m_dev_buffer->get_access<sycl::access::mode::read>(cgh);
             auto out_acc = out_buf.get_access<sycl::access::mode::write>(cgh);
             cgh.copy(in_acc, out_acc);
         });
@@ -86,5 +86,5 @@ void gpgpu::SYCLImage::Resize(const glm::ivec2 &size)
 
     m_size = size;
 
-    m_dev_buffer = sycl::buffer<glm::vec4, 1>(m_size.x * m_size.y);
+    m_dev_buffer = std::make_unique<sycl::buffer<glm::vec3, 1>>(m_size.x * m_size.y);
 }

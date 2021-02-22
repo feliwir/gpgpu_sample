@@ -46,6 +46,7 @@ class Window
     float m_brightness = 0.0f;
 
     int m_procTime = 0;
+    int m_allTime = 0;
     std::shared_ptr<IBrightnessProcessor> m_brightProc;
     std::shared_ptr<ISaturationProcessor> m_satProc;
     std::shared_ptr<IToneMappingProcessor> m_toneProc;

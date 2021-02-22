@@ -19,14 +19,13 @@ bool gpgpu::IImage::Load(const std::filesystem::path &path)
         return false;
     }
     // Convert image data to floats
-    std::vector<glm::vec4> m_data(height * width);
+    std::vector<glm::vec3> m_data(height * width);
 
     for (int i = 0; i < width * height; i++)
     {
         m_data[i].r = data[NUM_IMG_CHANNELS * i + 0];
         m_data[i].g = data[NUM_IMG_CHANNELS * i + 1];
         m_data[i].b = data[NUM_IMG_CHANNELS * i + 2];
-        m_data[i].a = 1.0f;
     }
 
     Create(glm::ivec2(width, height), m_data);

@@ -14,8 +14,8 @@ class IImage
     {
         return m_size;
     }
-    virtual std::vector<glm::vec4> &GetData() = 0;
-    virtual void Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data) = 0;
+    virtual std::vector<glm::vec3> &GetData() = 0;
+    virtual void Create(const glm::ivec2 &size, const std::vector<glm::vec3> &data) = 0;
     virtual void Resize(const glm::ivec2 &size) = 0;
 
   protected:

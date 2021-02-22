@@ -7,13 +7,13 @@ namespace gpgpu
 class Brightness
 {
   public:
-    static inline glm::vec4 Apply(const glm::vec4 &inPixel, float factor)
+    static inline glm::vec3 Apply(const glm::vec3 &inPixel, float factor)
     {
-        auto hsvPixel = glm::hsvColor(glm::vec3(inPixel));
+        auto hsvPixel = glm::hsvColor(inPixel);
 
         hsvPixel.b = glm::clamp(factor * hsvPixel.b + hsvPixel.b, 0.0f, 1.0f);
 
-        return glm::vec4(glm::rgbColor(hsvPixel), inPixel.a);
+        return glm::rgbColor(hsvPixel);
     }
 };
 } // namespace gpgpu

@@ -1,7 +1,7 @@
 #include "CPUImage.hpp"
 #include <iostream>
 
-std::vector<glm::vec4> &gpgpu::CPUImage::GetData()
+std::vector<glm::vec3> &gpgpu::CPUImage::GetData()
 {
     return m_data;
 }
@@ -25,7 +25,7 @@ std::shared_ptr<gpgpu::IImage> gpgpu::CPUImage::From(std::shared_ptr<gpgpu::IIma
     return result;
 }
 
-void gpgpu::CPUImage::Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data)
+void gpgpu::CPUImage::Create(const glm::ivec2 &size, const std::vector<glm::vec3> &data)
 {
     if (data.size() != size.x * size.y)
     {

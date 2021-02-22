@@ -11,8 +11,8 @@ struct SaturationKernel
     }
 
     float m_factor;
-    sycl::accessor<glm::vec4, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
-    sycl::accessor<glm::vec4, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
+    sycl::accessor<glm::vec3, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
+    sycl::accessor<glm::vec3, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
 };
 
 gpgpu::SYCLSaturationProcessor::SYCLSaturationProcessor(cl::sycl::queue &queue) : m_queue(queue)

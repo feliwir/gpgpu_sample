@@ -7,9 +7,9 @@ namespace gpgpu
 class Saturation
 {
   public:
-    static inline glm::vec4 Apply(const glm::vec4 &inPixel, float factor)
+    static inline glm::vec3 Apply(const glm::vec3 &inPixel, float factor)
     {
-        auto hsvPixel = glm::hsvColor(glm::vec3(inPixel));
+        auto hsvPixel = glm::hsvColor(inPixel);
 
         if (factor >= 0)
         {
@@ -20,7 +20,7 @@ class Saturation
             hsvPixel.g = hsvPixel.g + factor * hsvPixel.g;
         }
 
-        return glm::vec4(glm::rgbColor(hsvPixel), inPixel.a);
+        return glm::rgbColor(hsvPixel);
     }
 };
 } // namespace gpgpu

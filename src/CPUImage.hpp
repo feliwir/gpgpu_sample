@@ -9,8 +9,8 @@ class CPUImage : public IImage
     static std::shared_ptr<IImage> From(std::shared_ptr<IImage> src);
 
     // Inherited
-    std::vector<glm::vec4> &GetData() override;
-    void Create(const glm::ivec2 &size, const std::vector<glm::vec4> &data) override;
+    std::vector<glm::vec3> &GetData() override;
+    void Create(const glm::ivec2 &size, const std::vector<glm::vec3> &data) override;
     inline void Resize(const glm::ivec2 &size) override
     {
         m_size = size;
@@ -25,6 +25,6 @@ class CPUImage : public IImage
     }
 
   private:
-    std::vector<glm::vec4> m_data;
+    std::vector<glm::vec3> m_data;
 };
 } // namespace gpgpu

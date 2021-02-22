@@ -139,15 +139,17 @@ void gpgpu::Window::UpdateImage()
         return;
     }
 
-    std::cout << "Update image" << std::endl;
-    auto beg = std::chrono::system_clock::now();
-    m_pipeline.Process(m_input);
-    auto end = std::chrono::system_clock::now();
+    std::cout << "Begin update image" << std::endl;
+    auto all_beg = std::chrono::system_clock::now();
 
-    m_procTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - beg).count();
+    auto proc_beg = std::chrono::system_clock::now();
+    m_pipeline.Process(m_input);
+    m_queue.wait();
+    auto proc_end = std::chrono::system_clock::now();
+
+    m_procTime = std::chrono::duration_cast<std::chrono::milliseconds>(proc_end - proc_beg).count();
     std::cout << "Pipeline process: " << m_procTime << "ms" << std::endl;
 
-    std::cout << "Update image" << std::endl;
     // Upload output
     if (m_imageHandle == 0)
     {
@@ -163,8 +165,11 @@ void gpgpu::Window::UpdateImage()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
     auto output = m_pipeline.GetOutput();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGBA, GL_FLOAT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGB, GL_FLOAT,
                  output->GetData().data());
+    auto all_end = std::chrono::system_clock::now();
+    m_allTime = std::chrono::duration_cast<std::chrono::milliseconds>(all_end - all_beg).count();
+    std::cout << "Done update image: " << m_allTime << "ms" << std::endl;
 }
 
 void gpgpu::Window::CreatePipeline(int backend)
@@ -197,6 +202,7 @@ void gpgpu::Window::CreatePipeline(int backend)
         break;
     }
 
+    m_toneProc->SetActive(m_useTonemap);
     m_toneProc->SetGamma(m_gamma);
     m_toneProc->SetExposure(m_exposure);
     m_satProc->SetFactor(m_saturation);
@@ -318,7 +324,8 @@ void gpgpu::Window::Run()
                 UpdateImage();
             }
 
-            ImGui::LabelText("Time", "Processed in %ums", m_procTime);
+            ImGui::LabelText("", "Processed in %ums", m_procTime);
+            // ImGui::LabelText("", "All done in %ums", m_allTime);
             ImGui::End();
 
             ImGui::Begin("Backend settings"); // Create a window called "Hello, world!" and append into it.
