@@ -33,8 +33,6 @@ void gpgpu::SYCLBrightnessProcessor::Process(std::shared_ptr<IImage> in)
                 out_acc[item] = gpgpu::Brightness::Apply(in_acc[item], factor);
             });
         });
-
-        process.wait();
     }
     catch (const cl::sycl::exception &e)
     {

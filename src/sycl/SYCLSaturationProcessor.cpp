@@ -33,8 +33,6 @@ void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
                 out_acc[item] = gpgpu::Saturation::Apply(in_acc[item], factor);
             });
         });
-
-        process.wait();
     }
     catch (const cl::sycl::exception &e)
     {

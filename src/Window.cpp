@@ -144,8 +144,8 @@ void gpgpu::Window::UpdateImage()
 
     auto proc_beg = std::chrono::system_clock::now();
     m_pipeline.Process(m_input);
-    m_queue.wait();
     auto proc_end = std::chrono::system_clock::now();
+    // m_queue.wait();
 
     m_procTime = std::chrono::duration_cast<std::chrono::milliseconds>(proc_end - proc_beg).count();
     std::cout << "Pipeline process: " << m_procTime << "ms" << std::endl;
@@ -160,9 +160,8 @@ void gpgpu::Window::UpdateImage()
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                    GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
 
     auto output = m_pipeline.GetOutput();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGB, GL_FLOAT,

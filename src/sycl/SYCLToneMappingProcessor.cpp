@@ -35,8 +35,6 @@ void gpgpu::SYCLToneMappingProcessor::Process(std::shared_ptr<IImage> in)
                 out_acc[item] = gpgpu::ToneMapping::Apply(in_acc[item], gamma, exposure);
             });
         });
-
-        process.wait();
     }
     catch (const cl::sycl::exception &e)
     {
