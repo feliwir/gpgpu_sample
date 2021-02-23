@@ -1,14 +1,14 @@
-#include "MTCPUBrightnessProcessor.hpp"
-#include "../CPUImage.hpp"
+#include "CPUBrightnessProcessor.hpp"
 #include "../common/Brightness.hpp"
+#include "CPUImage.hpp"
 #include <glm/glm.hpp>
 
-gpgpu::MTCPUBrightnessProcessor::MTCPUBrightnessProcessor()
+gpgpu::CPUBrightnessProcessor::CPUBrightnessProcessor()
 {
     m_output = std::make_shared<CPUImage>();
 }
 
-void gpgpu::MTCPUBrightnessProcessor::Process(std::shared_ptr<IImage> in)
+void gpgpu::CPUBrightnessProcessor::Process(std::shared_ptr<IImage> in)
 {
     m_output->Resize(in->GetSize());
 

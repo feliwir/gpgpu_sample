@@ -1,14 +1,14 @@
-#include "MTCPUToneMappingProcessor.hpp"
-#include "../CPUImage.hpp"
-#include "../common/ToneMapping.hpp"
+#include "CPUSaturationProcessor.hpp"
+#include "../common/Saturation.hpp"
+#include "CPUImage.hpp"
 #include <glm/glm.hpp>
 
-gpgpu::MTCPUToneMappingProcessor::MTCPUToneMappingProcessor()
+gpgpu::CPUSaturationProcessor::CPUSaturationProcessor()
 {
     m_output = std::make_shared<CPUImage>();
 }
 
-void gpgpu::MTCPUToneMappingProcessor::Process(std::shared_ptr<IImage> in)
+void gpgpu::CPUSaturationProcessor::Process(std::shared_ptr<IImage> in)
 {
     m_output->Resize(in->GetSize());
 
@@ -18,6 +18,6 @@ void gpgpu::MTCPUToneMappingProcessor::Process(std::shared_ptr<IImage> in)
         const auto &inPixel = in->GetData()[i];
         auto &outPixel = m_output->GetData()[i];
 
-        outPixel = ToneMapping::Apply(inPixel, m_gamma, m_exposure);
+        outPixel = Saturation::Apply(inPixel, m_factor);
     }
 }

@@ -8,23 +8,20 @@
 #include <iostream>
 #include <tinyfiledialogs.h>
 
-#include "CPUImage.hpp"
-#include "SYCLImage.hpp"
+#include "proc/cpu/CPUImage.hpp"
+#include "proc/sycl/SYCLImage.hpp"
 
 // Saturation
-#include "cpu/CPUSaturationProcessor.hpp"
-#include "mtcpu/MTCPUSaturationProcessor.hpp"
-#include "sycl/SYCLSaturationProcessor.hpp"
+#include "proc/cpu/CPUSaturationProcessor.hpp"
+#include "proc/sycl/SYCLSaturationProcessor.hpp"
 
 // Brightness
-#include "cpu/CPUBrightnessProcessor.hpp"
-#include "mtcpu/MTCPUBrightnessProcessor.hpp"
-#include "sycl/SYCLBrightnessProcessor.hpp"
+#include "proc/cpu/CPUBrightnessProcessor.hpp"
+#include "proc/sycl/SYCLBrightnessProcessor.hpp"
 
 // Tone mapping
-#include "cpu/CPUToneMappingProcessor.hpp"
-#include "mtcpu/MTCPUToneMappingProcessor.hpp"
-#include "sycl/SYCLToneMappingProcessor.hpp"
+#include "proc/cpu/CPUToneMappingProcessor.hpp"
+#include "proc/sycl/SYCLToneMappingProcessor.hpp"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam)
@@ -160,8 +157,8 @@ void gpgpu::Window::UpdateImage()
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     auto output = m_pipeline.GetOutput();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, output->GetSize().x, output->GetSize().y, 0, GL_RGB, GL_FLOAT,
@@ -186,12 +183,6 @@ void gpgpu::Window::CreatePipeline(int backend)
         m_satProc = std::make_shared<CPUSaturationProcessor>();
         break;
     case 1:
-        m_input = CPUImage::From(m_input);
-        m_toneProc = std::make_shared<MTCPUToneMappingProcessor>();
-        m_brightProc = std::make_shared<MTCPUBrightnessProcessor>();
-        m_satProc = std::make_shared<MTCPUSaturationProcessor>();
-        break;
-    case 2:
         m_input = SYCLImage::From(m_input, m_queue);
         m_toneProc = std::make_shared<SYCLToneMappingProcessor>(m_queue);
         m_brightProc = std::make_shared<SYCLBrightnessProcessor>(m_queue);
@@ -236,7 +227,7 @@ void gpgpu::Window::Run()
     ImGuiIO &io = ImGui::GetIO();
 
     // Backend settings
-    const char *backends[] = {"CPU", "Multicore CPU", "SYCL"};
+    const char *backends[] = {"CPU", "SYCL"};
     static int current_backend = 0;
 
     // Main loop

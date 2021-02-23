@@ -1,9 +1,9 @@
 #pragma once
-#include "IBrightnessProcessor.hpp"
-#include "IImage.hpp"
-#include "ISaturationProcessor.hpp"
-#include "IToneMappingProcessor.hpp"
-#include "Pipeline.hpp"
+#include "proc/IBrightnessProcessor.hpp"
+#include "proc/IImage.hpp"
+#include "proc/ISaturationProcessor.hpp"
+#include "proc/IToneMappingProcessor.hpp"
+#include "proc/Pipeline.hpp"
 #include <CL/sycl.hpp>
 #include <GL/glew.h>
 #include <SDL.h>

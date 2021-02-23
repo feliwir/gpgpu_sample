@@ -7,6 +7,12 @@
 
 namespace gpgpu
 {
+enum class Backend
+{
+    CPU,
+    SYCL
+};
+
 class Pipeline
 {
   public:

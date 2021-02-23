@@ -1,16 +1,16 @@
-#include "SYCLSaturationProcessor.hpp"
-#include "../SYCLImage.hpp"
-#include "../common/Saturation.hpp"
+#include "SYCLBrightnessProcessor.hpp"
+#include "../common/Brightness.hpp"
+#include "SYCLImage.hpp"
 #include <iostream>
 
-gpgpu::SYCLSaturationProcessor::SYCLSaturationProcessor(cl::sycl::queue &queue) : m_queue(queue)
+gpgpu::SYCLBrightnessProcessor::SYCLBrightnessProcessor(cl::sycl::queue &queue) : m_queue(queue)
 {
     m_output = std::make_shared<SYCLImage>(m_queue);
 }
 
-class SaturationKernel;
+class BrightnessKernel;
 
-void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
+void gpgpu::SYCLBrightnessProcessor::Process(std::shared_ptr<IImage> in)
 {
     m_output->Resize(in->GetSize());
 
@@ -29,8 +29,8 @@ void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
             const int num_pixels = in->GetSize().x * in->GetSize().y;
             float factor = m_factor;
 
-            cgh.parallel_for<SaturationKernel>(sycl::range<1>(num_pixels), [=](sycl::item<1> item) {
-                out_acc[item] = gpgpu::Saturation::Apply(in_acc[item], factor);
+            cgh.parallel_for<BrightnessKernel>(sycl::range<1>(num_pixels), [=](sycl::item<1> item) {
+                out_acc[item] = gpgpu::Brightness::Apply(in_acc[item], factor);
             });
         });
     }

@@ -1,6 +1,6 @@
 #include "SYCLToneMappingProcessor.hpp"
-#include "../SYCLImage.hpp"
 #include "../common/ToneMapping.hpp"
+#include "SYCLImage.hpp"
 #include <glm/glm.hpp>
 #include <iostream>
 

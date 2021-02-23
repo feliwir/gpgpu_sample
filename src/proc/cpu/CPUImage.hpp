@@ -1,5 +1,5 @@
 #pragma once
-#include "IImage.hpp"
+#include "../IImage.hpp"
 
 namespace gpgpu
 {
