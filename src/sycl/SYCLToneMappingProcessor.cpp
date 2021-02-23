@@ -4,23 +4,12 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
-struct ToneMappingKernel
-{
-    void operator()(cl::sycl::item<1> item)
-    {
-        m_out_acc[item] = gpgpu::ToneMapping::Apply(m_in_acc[item], m_gamma, m_exposure);
-    }
-
-    float m_gamma;
-    float m_exposure;
-    sycl::accessor<glm::vec3, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
-    sycl::accessor<glm::vec3, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
-};
-
 gpgpu::SYCLToneMappingProcessor::SYCLToneMappingProcessor(cl::sycl::queue &queue) : m_queue(queue)
 {
     m_output = std::make_shared<SYCLImage>(m_queue);
 }
+
+class ToneMappingKernel;
 
 void gpgpu::SYCLToneMappingProcessor::Process(std::shared_ptr<IImage> in)
 {
@@ -39,9 +28,12 @@ void gpgpu::SYCLToneMappingProcessor::Process(std::shared_ptr<IImage> in)
             auto out_acc = out_buf.get_access<sycl::access::mode::write>(cgh);
 
             const int num_pixels = in->GetSize().x * in->GetSize().y;
+            float gamma = m_gamma;
+            float exposure = m_exposure;
 
-            ToneMappingKernel fn{m_gamma, m_exposure, in_acc, out_acc};
-            cgh.parallel_for(sycl::range<1>(num_pixels), fn);
+            cgh.parallel_for<ToneMappingKernel>(sycl::range<1>(num_pixels), [=](sycl::item<1> item) {
+                out_acc[item] = gpgpu::ToneMapping::Apply(in_acc[item], gamma, exposure);
+            });
         });
 
         process.wait();

@@ -3,22 +3,12 @@
 #include "../common/Saturation.hpp"
 #include <iostream>
 
-struct SaturationKernel
-{
-    void operator()(cl::sycl::item<1> item)
-    {
-        m_out_acc[item] = gpgpu::Saturation::Apply(m_in_acc[item], m_factor);
-    }
-
-    float m_factor;
-    sycl::accessor<glm::vec3, 1, sycl::access::mode::read, sycl::access::target::global_buffer> m_in_acc;
-    sycl::accessor<glm::vec3, 1, sycl::access::mode::write, sycl::access::target::global_buffer> m_out_acc;
-};
-
 gpgpu::SYCLSaturationProcessor::SYCLSaturationProcessor(cl::sycl::queue &queue) : m_queue(queue)
 {
     m_output = std::make_shared<SYCLImage>(m_queue);
 }
+
+class SaturationKernel;
 
 void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
 {
@@ -37,9 +27,11 @@ void gpgpu::SYCLSaturationProcessor::Process(std::shared_ptr<IImage> in)
             auto out_acc = out_buf.get_access<sycl::access::mode::write>(cgh);
 
             const int num_pixels = in->GetSize().x * in->GetSize().y;
+            float factor = m_factor;
 
-            SaturationKernel fn{m_factor, in_acc, out_acc};
-            cgh.parallel_for(sycl::range<1>(num_pixels), fn);
+            cgh.parallel_for<SaturationKernel>(sycl::range<1>(num_pixels), [=](sycl::item<1> item) {
+                out_acc[item] = gpgpu::Saturation::Apply(in_acc[item], factor);
+            });
         });
 
         process.wait();
