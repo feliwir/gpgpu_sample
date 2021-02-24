@@ -8,8 +8,6 @@ namespace gpgpu
 class IImage
 {
   public:
-    bool Load(const std::filesystem::path &path);
-
     inline const glm::ivec2 &GetSize() const
     {
         return m_size;

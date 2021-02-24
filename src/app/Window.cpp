@@ -69,6 +69,7 @@ gpgpu::Window::Window() : m_queue(sycl::default_selector{})
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.Fonts->AddFontDefault();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -79,7 +80,7 @@ gpgpu::Window::Window() : m_queue(sycl::default_selector{})
 
 // See ImGuiFreeType::RasterizationFlags
 #ifdef HAS_FREETYPE_SUPPORT
-    unsigned int flags = ImGuiFreeType::NoHinting;
+    unsigned int flags = ImGuiFreeTypeBuilderFlags_NoHinting;
     ImGuiFreeType::BuildFontAtlas(io.Fonts, flags);
     std::cout << "Generated freetype font atlas" << std::endl;
 #endif
@@ -87,6 +88,8 @@ gpgpu::Window::Window() : m_queue(sycl::default_selector{})
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
+
+    m_inputData = std::make_unique<ImageData>();
 
     // Create pipeline
     CreatePipeline(0);
@@ -117,9 +120,10 @@ void gpgpu::Window::LoadImage()
 
     if (file)
     {
-        if (m_input->Load(file))
+        if (m_inputData->Load(file))
         {
             m_filename = std::filesystem::path(file).filename().string();
+            m_input->Create(m_inputData->GetSize(), m_inputData->GetData());
             UpdateImage();
         }
         else
@@ -269,53 +273,64 @@ void gpgpu::Window::Run()
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Image settings"); // Create a window called "Hello, world!" and append into it.
+            // Setup global dockspace
+            ImGui::DockSpaceOverViewport();
 
-            if (ImGui::Button("Load image"))
+            ImGui::BeginMainMenuBar();
+            if (ImGui::BeginMenu("File"))
             {
-                LoadImage();
+                if (ImGui::MenuItem("Open Image"))
+                {
+                    LoadImage();
+                }
+                ImGui::MenuItem("Open Directory");
+                ImGui::EndMenu();
             }
+            ImGui::EndMainMenuBar();
 
-            ImGui::SameLine();
-            if (ImGui::Button("Reset"))
+            ImGui::Begin("Processing"); // Create a window called "Hello, world!" and append into it.
             {
-                Reset();
-            }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset"))
+                {
+                    Reset();
+                }
 
-            ImGui::Text("Tonemapping");
-            if (ImGui::Checkbox("Enable", &m_useTonemap))
-            {
-                m_toneProc->SetActive(m_useTonemap);
-                UpdateImage();
-            }
+                ImGui::Text("Tonemapping");
+                if (ImGui::Checkbox("Enable", &m_useTonemap))
+                {
+                    m_toneProc->SetActive(m_useTonemap);
+                    UpdateImage();
+                }
 
-            if (ImGui::SliderFloat("Exposure", &m_exposure, 0.01f, 5.0f))
-            {
-                m_toneProc->SetExposure(m_exposure);
-                UpdateImage();
-            }
+                if (ImGui::SliderFloat("Exposure", &m_exposure, 0.01f, 5.0f))
+                {
+                    m_toneProc->SetExposure(m_exposure);
+                    UpdateImage();
+                }
 
-            if (ImGui::SliderFloat("Gamma", &m_gamma, 1.0f, 3.0f))
-            {
-                m_toneProc->SetGamma(m_gamma);
-                UpdateImage();
-            }
+                if (ImGui::SliderFloat("Gamma", &m_gamma, 1.0f, 3.0f))
+                {
+                    m_toneProc->SetGamma(m_gamma);
+                    UpdateImage();
+                }
 
-            ImGui::Text("General");
-            if (ImGui::SliderFloat("Saturation", &m_saturation, -1.0f, 1.0f))
-            {
-                m_satProc->SetFactor(m_saturation);
-                UpdateImage();
-            }
+                ImGui::Text("General");
+                if (ImGui::SliderFloat("Saturation", &m_saturation, -1.0f, 1.0f))
+                {
+                    m_satProc->SetFactor(m_saturation);
+                    UpdateImage();
+                }
 
-            if (ImGui::SliderFloat("Brightness", &m_brightness, -1.0f, 1.0f))
-            {
-                m_brightProc->SetFactor(m_brightness);
-                UpdateImage();
-            }
+                if (ImGui::SliderFloat("Brightness", &m_brightness, -1.0f, 1.0f))
+                {
+                    m_brightProc->SetFactor(m_brightness);
+                    UpdateImage();
+                }
 
-            ImGui::LabelText("", "Processed in %ums", m_procTime);
-            // ImGui::LabelText("", "All done in %ums", m_allTime);
+                ImGui::LabelText("", "Processed in %ums", m_procTime);
+                // ImGui::LabelText("", "All done in %ums", m_allTime);
+            }
             ImGui::End();
 
             ImGui::Begin("Backend settings"); // Create a window called "Hello, world!" and append into it.
@@ -329,28 +344,30 @@ void gpgpu::Window::Run()
 
             std::string img_name = "Image (" + m_filename + "," + std::to_string(m_input->GetSize().x) + "px*" +
                                    std::to_string(m_input->GetSize().y) + "px)";
-            ImGui::Begin(img_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-            int maxWidth = io.DisplaySize.x * 0.8f;
-            int maxHeight = io.DisplaySize.y * 0.8f;
-
-            int displayWidth = m_input->GetSize().x;
-            int displayHeight = m_input->GetSize().y;
-
-            if (displayWidth > maxWidth)
+            ImGui::Begin(img_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking);
             {
-                float ratio = displayWidth / (float)maxWidth;
-                displayWidth /= ratio;
-                displayHeight /= ratio;
-            }
+                int maxWidth = io.DisplaySize.x * 0.8f;
+                int maxHeight = io.DisplaySize.y * 0.8f;
 
-            if (displayHeight > maxHeight)
-            {
-                float ratio = displayHeight / (float)maxHeight;
-                displayWidth /= ratio;
-                displayHeight /= ratio;
-            }
+                int displayWidth = m_input->GetSize().x;
+                int displayHeight = m_input->GetSize().y;
 
-            ImGui::Image((void *)(intptr_t)m_imageHandle, ImVec2(displayWidth, displayHeight));
+                if (displayWidth > maxWidth)
+                {
+                    float ratio = displayWidth / (float)maxWidth;
+                    displayWidth /= ratio;
+                    displayHeight /= ratio;
+                }
+
+                if (displayHeight > maxHeight)
+                {
+                    float ratio = displayHeight / (float)maxHeight;
+                    displayWidth /= ratio;
+                    displayHeight /= ratio;
+                }
+
+                ImGui::Image((void *)(intptr_t)m_imageHandle, ImVec2(displayWidth, displayHeight));
+            }
             ImGui::End();
         }
 

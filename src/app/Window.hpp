@@ -4,6 +4,7 @@
 #include "proc/ISaturationProcessor.hpp"
 #include "proc/IToneMappingProcessor.hpp"
 #include "proc/Pipeline.hpp"
+#include "imageio/ImageData.hpp"
 #include <CL/sycl.hpp>
 #include <GL/glew.h>
 #include <SDL.h>
@@ -35,6 +36,7 @@ class Window
 
     Pipeline m_pipeline;
     GLuint m_imageHandle = 0;
+    std::unique_ptr<ImageData> m_inputData;
     std::shared_ptr<IImage> m_input;
     std::string m_filename;
 

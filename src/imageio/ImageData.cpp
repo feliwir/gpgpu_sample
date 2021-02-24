@@ -1,10 +1,10 @@
-#include "IImage.hpp"
+#include "ImageData.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-constexpr int NUM_IMG_CHANNELS = 3;
+#define NUM_IMG_CHANNELS 3
 
-bool gpgpu::IImage::Load(const std::filesystem::path &path)
+bool gpgpu::ImageData::Load(const std::filesystem::path &path)
 {
     if (!std::filesystem::exists(path))
     {
@@ -19,16 +19,17 @@ bool gpgpu::IImage::Load(const std::filesystem::path &path)
         return false;
     }
     // Convert image data to floats
-    std::vector<glm::vec3> m_data(height * width);
+    m_data.resize(height * width);
 
     for (int i = 0; i < width * height; i++)
     {
         m_data[i].r = data[NUM_IMG_CHANNELS * i + 0];
         m_data[i].g = data[NUM_IMG_CHANNELS * i + 1];
         m_data[i].b = data[NUM_IMG_CHANNELS * i + 2];
+        // m_data[i].a = data[NUM_IMG_CHANNELS * i + 3];
     }
 
-    Create(glm::ivec2(width, height), m_data);
+    m_size = glm::ivec2(width, height);
 
     stbi_image_free(data);
     return true;
