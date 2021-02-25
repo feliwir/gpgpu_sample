@@ -15,6 +15,7 @@ if(ComputeCpp_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/SYCLSaturationProcessor.hpp)
 
     target_sources(libprocsycl PRIVATE ${SYCL_SRC_FILES})
+    target_include_directories(libprocsycl PUBLIC ${CMAKE_SOURCE_DIR}/contrib/glm)
 
     add_sycl_to_target(TARGET libprocsycl SOURCES ${SYCL_SRC_FILES})
     target_link_libraries(libproc PUBLIC libprocsycl)

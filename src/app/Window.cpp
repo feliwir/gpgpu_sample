@@ -1,8 +1,10 @@
 #include "Window.hpp"
 #include "imgui.h"
-#include "imgui_freetype.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
+#ifdef HAS_FREETYPE_SUPPORT
+#include "imgui_freetype.h"
+#endif
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -113,6 +115,7 @@ void gpgpu::Window::LoadImage()
 {
     std::vector<const char *> patterns;
     patterns.push_back("*.jpg");
+    patterns.push_back("*.JPG");
     patterns.push_back("*.png");
     patterns.push_back("*.hdr");
 

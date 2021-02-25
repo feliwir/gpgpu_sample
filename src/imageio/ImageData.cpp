@@ -1,4 +1,6 @@
 #include "ImageData.hpp"
+#include <chrono>
+#include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -10,6 +12,8 @@ bool gpgpu::ImageData::Load(const std::filesystem::path &path)
     {
         return false;
     }
+
+    auto beg = std::chrono::system_clock::now();
 
     int width, height;
     auto data = stbi_loadf(path.c_str(), &width, &height, nullptr, NUM_IMG_CHANNELS);
@@ -32,5 +36,9 @@ bool gpgpu::ImageData::Load(const std::filesystem::path &path)
     m_size = glm::ivec2(width, height);
 
     stbi_image_free(data);
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - beg);
+    std::cout << "Loading took " << duration.count() << "ms" << std::endl;
+
     return true;
 }
